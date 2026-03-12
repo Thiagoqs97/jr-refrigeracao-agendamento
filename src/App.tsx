@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Dashboard from './components/Dashboard';
 import Technicians from './components/Technicians';
 import Services from './components/Services';
-import IsabelChat from './components/IsabelChat';
+
 import CalendarView from './components/CalendarView';
 import ClientsView from './components/ClientsView';
 import AppointmentForm from './components/AppointmentForm';
@@ -10,7 +10,7 @@ import { LayoutDashboard, Users, Briefcase, MessageSquare, Calendar, Phone, MapP
 import { COMPANY_INFO } from './constants';
 import { motion, AnimatePresence } from 'motion/react';
 
-type Tab = 'dashboard' | 'calendar' | 'technicians' | 'services' | 'chat' | 'clients';
+type Tab = 'dashboard' | 'calendar' | 'technicians' | 'services' | 'clients';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
@@ -25,7 +25,7 @@ export default function App() {
     { id: 'clients', label: 'Clientes', icon: UserCheck },
     { id: 'technicians', label: 'Técnicos', icon: Users },
     { id: 'services', label: 'Serviços', icon: Briefcase },
-    { id: 'chat', label: 'Isabel (IA)', icon: MessageSquare },
+
   ];
 
   return (
@@ -116,7 +116,7 @@ export default function App() {
               {activeTab === 'clients' && <ClientsView />}
               {activeTab === 'technicians' && <Technicians onNavigate={setActiveTab} />}
               {activeTab === 'services' && <Services />}
-              {activeTab === 'chat' && <IsabelChat />}
+
             </motion.div>
           </AnimatePresence>
         </main>
