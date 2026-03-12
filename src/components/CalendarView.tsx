@@ -4,6 +4,7 @@ import { Appointment, Technician } from '../types';
 import { TECHNICIANS } from '../constants';
 import { ChevronLeft, ChevronRight, Clock, User, MapPin, Filter, Loader2, Calendar, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { isSameDay } from '../lib/utils';
 
 export default function CalendarView() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -39,11 +40,10 @@ export default function CalendarView() {
     setSelectedDate(newDate);
   };
 
-  const dateStr = selectedDate.toISOString().split('T')[0];
   const filteredAppointments = appointments.filter(app => {
-    const isSameDay = app.scheduled_at.startsWith(dateStr);
+    const isToday = isSameDay(app.scheduled_at, selectedDate);
     const matchesTech = filterTech === 'all' || app.technician_id === filterTech;
-    return isSameDay && matchesTech;
+    return isToday && matchesTech;
   });
 
   if (isLoading) {

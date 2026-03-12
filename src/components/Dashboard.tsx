@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { appointmentService } from '../services/appointmentService';
 import { Appointment } from '../types';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { isSameDay } from '../lib/utils';
 
 interface DashboardProps {
   onNavigate: (tab: any) => void;
@@ -36,8 +37,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     loadData();
   }, [isConfigured]);
 
-  const today = new Date().toISOString().split('T')[0];
-  const todayAppointments = appointments.filter(a => a.scheduled_at.startsWith(today));
+  const today = new Date();
+  const todayAppointments = appointments.filter(a => isSameDay(a.scheduled_at, today));
   const pendingAppointments = appointments.filter(a => a.status === 'pending');
   const completedAppointments = appointments.filter(a => a.status === 'completed');
 
