@@ -26,14 +26,7 @@ export default function AppointmentForm({ onClose, onSuccess }: AppointmentFormP
     notes: ''
   });
 
-  const getEnv = (key: string) => {
-    if (key === 'SUPABASE_URL') return process.env.SUPABASE_URL;
-    if (key === 'SUPABASE_ANON_KEY') return process.env.SUPABASE_ANON_KEY;
-    if (key === 'GEMINI_API_KEY') return process.env.GEMINI_API_KEY;
-    return null;
-  };
-
-  const isSupabaseConfigured = !!getEnv('SUPABASE_URL') && !!getEnv('SUPABASE_ANON_KEY');
+  const isSupabaseConfigured = !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

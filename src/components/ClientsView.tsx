@@ -4,6 +4,7 @@ import { Appointment, Client } from '../types';
 import { User, Phone, MapPin, History, ChevronRight, Search, Loader2, Calendar, Clock, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SERVICES, TECHNICIANS } from '../constants';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 export default function ClientsView() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -12,18 +13,11 @@ export default function ClientsView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
 
-  const getEnv = (key: string) => {
-    if (key === 'SUPABASE_URL') return process.env.SUPABASE_URL;
-    if (key === 'SUPABASE_ANON_KEY') return process.env.SUPABASE_ANON_KEY;
-    if (key === 'GEMINI_API_KEY') return process.env.GEMINI_API_KEY;
-    return null;
-  };
-
-  const isSupabaseConfigured = !!getEnv('SUPABASE_URL') && !!getEnv('SUPABASE_ANON_KEY') && !getEnv('SUPABASE_URL')?.includes('seu-projeto');
+  const isConfigured = isSupabaseConfigured();
 
   useEffect(() => {
     async function load() {
-      if (!isSupabaseConfigured) {
+      if (!isConfigured) {
         setIsLoading(false);
         return;
       }
@@ -38,7 +32,7 @@ export default function ClientsView() {
       }
     }
     load();
-  }, [isSupabaseConfigured]);
+  }, [isConfigured]);
 
   // Group appointments by client (using whatsapp as unique ID)
   interface ClientGroup {
@@ -91,12 +85,14 @@ export default function ClientsView() {
     );
   }
 
-  if (!isSupabaseConfigured) {
+  if (!isConfigured) {
     return (
-      <div className="bg-amber-50 border border-amber-200 p-8 rounded-2xl text-center">
-        <AlertCircle className="mx-auto mb-2 text-amber-600" size={32} />
-        <h3 className="text-amber-900 font-bold">Configuração Pendente</h3>
-        <p className="text-amber-700 text-sm">O banco de dados não está configurado. Adicione as chaves no arquivo .env.local.</p>
+      <div className="flex flex-col items-center justify-center h-full bg-amber-50/20 border border-amber-100/50 rounded-3xl p-12 text-center">
+        <AlertCircle className="mx-auto mb-4 text-amber-600" size={48} />
+        <h3 className="text-amber-900 font-black text-xl mb-2">Configuração Pendente</h3>
+        <p className="text-amber-700 text-sm max-w-sm font-medium">
+          O banco de dados não está configurado para listar clientes. Adicione as chaves no arquivo <code className="bg-amber-100/80 px-1 rounded">.env.local</code> e realize um novo deploy no Vercel.
+        </p>
       </div>
     );
   }

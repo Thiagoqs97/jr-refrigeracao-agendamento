@@ -6,7 +6,7 @@ import { Send, User, Bot, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { appointmentService } from '../services/appointmentService';
 
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const genAI = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 export default function IsabelChat() {
   const [messages, setMessages] = useState<Message[]>([

@@ -1,20 +1,32 @@
 import { createClient } from '@supabase/supabase-js';
 
-const getEnv = (key: string) => {
-  if (key === 'SUPABASE_URL') return process.env.SUPABASE_URL;
-  if (key === 'SUPABASE_ANON_KEY') return process.env.SUPABASE_ANON_KEY;
-  if (key === 'GEMINI_API_KEY') return process.env.GEMINI_API_KEY;
-  return null;
-};
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabaseUrl = (getEnv('SUPABASE_URL') || 'https://your-project.supabase.co').trim().replace(/\/$/, '');
-const supabaseAnonKey = (getEnv('SUPABASE_ANON_KEY') || 'your-anon-key').trim();
-
-if (!getEnv('SUPABASE_URL') || !getEnv('SUPABASE_ANON_KEY')) {
-  console.warn('Supabase URL or Anon Key is missing. Please configure them in the Secrets panel.');
+// Debugging environment variables in different environments
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('⚠️ Supabase URL ou Anon Key não encontradas no ambiente do Vite.');
+  console.log('Ambiente atual:', import.meta.env.MODE);
+  console.log('VITE_SUPABASE_URL presente:', !!supabaseUrl);
+} else {
+  const isPlaceholder = supabaseUrl.includes('seu-projeto');
+  if (isPlaceholder) {
+    console.warn('⚠️ A URL do Supabase ainda parece ser um placeholder.');
+  } else {
+    console.log('✅ Supabase configurado para:', supabaseUrl);
+  }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+
+/**
+ * Verifica se a configuração básica existe e é válida
+ */
+export const isSupabaseConfigured = () => {
+  return !!supabaseUrl && 
+         !!supabaseAnonKey && 
+         !supabaseUrl.includes('seu-projeto');
+};
 
 /**
  * SQL Schema for Supabase:

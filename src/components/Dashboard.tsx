@@ -4,6 +4,7 @@ import { Users, Calendar, Clock, MapPin, CheckCircle2, AlertCircle, Loader2 } fr
 import { motion } from 'motion/react';
 import { appointmentService } from '../services/appointmentService';
 import { Appointment } from '../types';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface DashboardProps {
   onNavigate: (tab: any) => void;
@@ -14,18 +15,11 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const getEnv = (key: string) => {
-    if (key === 'SUPABASE_URL') return process.env.SUPABASE_URL;
-    if (key === 'SUPABASE_ANON_KEY') return process.env.SUPABASE_ANON_KEY;
-    if (key === 'GEMINI_API_KEY') return process.env.GEMINI_API_KEY;
-    return null;
-  };
-
-  const isSupabaseConfigured = !!getEnv('SUPABASE_URL') && !!getEnv('SUPABASE_ANON_KEY');
+  const isConfigured = isSupabaseConfigured();
 
   useEffect(() => {
     async function loadData() {
-      if (!isSupabaseConfigured) {
+      if (!isConfigured) {
         setIsLoading(false);
         return;
       }
@@ -40,7 +34,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       }
     }
     loadData();
-  }, [isSupabaseConfigured]);
+  }, [isConfigured]);
 
   const today = new Date().toISOString().split('T')[0];
   const todayAppointments = appointments.filter(a => a.scheduled_at.startsWith(today));
@@ -62,31 +56,6 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 p-6 rounded-2xl text-center">
-        <AlertCircle className="mx-auto mb-2 text-red-600" size={32} />
-        <h3 className="text-red-900 font-bold">Erro de Conexão</h3>
-        <p className="text-red-700 text-sm">{error}</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold"
-        >
-          Tentar Novamente
-        </button>
-      </div>
-    );
-  }
-
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="bg-amber-50 border border-amber-200 p-8 rounded-2xl text-center">
-        <AlertCircle className="mx-auto mb-2 text-amber-600" size={32} />
-        <h3 className="text-amber-900 font-bold">Configuração Pendente</h3>
-        <p className="text-amber-700 text-sm">O banco de dados não está configurado. Adicione as chaves no arquivo .env.local.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -125,7 +94,20 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             </button>
           </div>
           <div className="divide-y divide-slate-50 w-full">
-            {appointments.length > 0 ? (
+            {!isConfigured ? (
+              <div className="py-12 px-6 text-center bg-amber-50/30 rounded-b-2xl">
+                <AlertCircle className="mx-auto mb-2 text-amber-600" size={24} />
+                <h4 className="text-amber-900 font-bold text-sm">Configuração Pendente</h4>
+                <p className="text-amber-700 text-[11px] max-w-xs mx-auto mt-1">
+                  O banco de dados não está configurado. Verifique o arquivo <code className="bg-amber-100 px-1 rounded">.env.local</code> e realize um novo deploy no Vercel.
+                </p>
+              </div>
+            ) : error ? (
+              <div className="py-12 px-6 text-center text-red-500">
+                <AlertCircle className="mx-auto mb-2" size={24} />
+                <p className="text-xs font-medium">{error}</p>
+              </div>
+            ) : appointments.length > 0 ? (
               appointments.slice(0, 10).map((app, i) => {
                 const tech = TECHNICIANS.find(t => t.id === app.technician_id);
                 const service = SERVICES.find(s => s.id === app.service_id);
