@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SERVICES, TECHNICIANS } from '../constants';
-import { X, Calendar, User, Phone, MapPin, Wrench, MessageSquare, CreditCard, Loader2, AlertCircle, Plus } from 'lucide-react';
+import { X, Calendar, User, Phone, MapPin, Wrench, MessageSquare, CreditCard, Loader2, AlertCircle, Plus, Pencil } from 'lucide-react';
 import { motion } from 'motion/react';
 import { appointmentService } from '../services/appointmentService';
 import { supabase } from '../lib/supabase';
+import { Appointment } from '../types';
 
 interface AppointmentFormProps {
   onClose: () => void;
   onSuccess: () => void;
+  editingAppointment?: Appointment | null;
 }
 
-export default function AppointmentForm({ onClose, onSuccess }: AppointmentFormProps) {
+function formatDateTimeLocal(isoString: string): string {
+  const date = new Date(isoString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+export default function AppointmentForm({ onClose, onSuccess, editingAppointment }: AppointmentFormProps) {
+  const isEditing = !!editingAppointment;
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -25,6 +38,23 @@ export default function AppointmentForm({ onClose, onSuccess }: AppointmentFormP
     payment_method: 'PIX',
     notes: ''
   });
+
+  useEffect(() => {
+    if (editingAppointment) {
+      setFormData({
+        client_name: editingAppointment.client_name,
+        client_whatsapp: editingAppointment.client_whatsapp,
+        address: editingAppointment.address,
+        equipment_type: editingAppointment.equipment_type,
+        problem_description: editingAppointment.problem_description,
+        service_id: editingAppointment.service_id,
+        technician_id: editingAppointment.technician_id,
+        scheduled_at: formatDateTimeLocal(editingAppointment.scheduled_at),
+        payment_method: editingAppointment.payment_method || 'PIX',
+        notes: editingAppointment.notes || ''
+      });
+    }
+  }, [editingAppointment]);
 
   const isSupabaseConfigured = !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -43,7 +73,7 @@ export default function AppointmentForm({ onClose, onSuccess }: AppointmentFormP
       return;
     }
 
-    console.log('Iniciando criação de agendamento...', formData);
+    console.log(isEditing ? 'Atualizando agendamento...' : 'Iniciando criação de agendamento...', formData);
     setIsLoading(true);
     
     let isPending = true;
@@ -60,38 +90,47 @@ export default function AppointmentForm({ onClose, onSuccess }: AppointmentFormP
         throw new Error('Data e hora inválidas');
       }
 
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert([{
-          client_name: formData.client_name,
-          client_whatsapp: formData.client_whatsapp,
-          address: formData.address,
-          equipment_type: formData.equipment_type,
-          problem_description: formData.problem_description,
-          service_id: formData.service_id,
-          technician_id: formData.technician_id,
-          scheduled_at: scheduledDate.toISOString(),
-          status: 'confirmed',
-          payment_method: formData.payment_method,
-          notes: formData.notes
-        }])
-        .select();
-      
+      const appointmentData = {
+        client_name: formData.client_name,
+        client_whatsapp: formData.client_whatsapp,
+        address: formData.address,
+        equipment_type: formData.equipment_type,
+        problem_description: formData.problem_description,
+        service_id: formData.service_id,
+        technician_id: formData.technician_id,
+        scheduled_at: scheduledDate.toISOString(),
+        payment_method: formData.payment_method,
+        notes: formData.notes
+      };
+
+      if (isEditing && editingAppointment) {
+        await appointmentService.update(editingAppointment.id, appointmentData);
+        console.log('Agendamento atualizado com sucesso');
+      } else {
+        const { data, error } = await supabase
+          .from('appointments')
+          .insert([{
+            ...appointmentData,
+            status: 'confirmed',
+          }])
+          .select();
+        
+        if (error) {
+          console.error('Erro no Supabase:', error);
+          throw error;
+        }
+        console.log('Agendamento criado com sucesso:', data);
+      }
+
       isPending = false;
       clearTimeout(timeoutId);
 
-      if (error) {
-        console.error('Erro no Supabase:', error);
-        throw error;
-      }
-
-      console.log('Agendamento criado com sucesso:', data);
       onSuccess();
       onClose();
     } catch (error: any) {
       isPending = false;
       clearTimeout(timeoutId);
-      console.error('Erro detalhado ao criar agendamento:', error);
+      console.error('Erro detalhado:', error);
       
       let message = error.message || 'Erro desconhecido';
       
@@ -119,9 +158,15 @@ export default function AppointmentForm({ onClose, onSuccess }: AppointmentFormP
         <div className="p-4 sm:p-6 border-b border-slate-200/50 flex justify-between items-center bg-white/50 backdrop-blur-md">
           <div>
             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <Plus size={20} className="text-emerald-500" /> Novo Agendamento Manual
+              {isEditing ? (
+                <><Pencil size={20} className="text-blue-500" /> Editar Agendamento</>
+              ) : (
+                <><Plus size={20} className="text-emerald-500" /> Novo Agendamento Manual</>
+              )}
             </h2>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-1">Preencha os dados do serviço</p>
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-1">
+              {isEditing ? 'Atualize os dados do serviço' : 'Preencha os dados do serviço'}
+            </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-200/50 rounded-full transition-colors text-slate-500 hover:text-slate-800 shrink-0">
             <X size={20} />
@@ -280,9 +325,9 @@ export default function AppointmentForm({ onClose, onSuccess }: AppointmentFormP
             form="appointment-form"
             type="submit"
             disabled={isLoading}
-            className="w-full sm:w-auto premium-gradient text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:translate-y-0"
+            className={`w-full sm:w-auto ${isEditing ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20 hover:shadow-blue-600/40' : 'premium-gradient shadow-emerald-600/20 hover:shadow-emerald-600/40'} text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:translate-y-0`}
           >
-            {isLoading ? <Loader2 className="animate-spin" size={18} /> : 'Salvar Agendamento'}
+            {isLoading ? <Loader2 className="animate-spin" size={18} /> : isEditing ? 'Salvar Alterações' : 'Salvar Agendamento'}
           </button>
         </div>
       </motion.div>

@@ -66,3 +66,44 @@ body {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+/* Action Buttons */
+.action-btn-success {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+.action-btn-success:hover {
+  background-color: #059669;
+  color: white;
+  border-color: #059669;
+  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.25);
+  transform: translateY(-1px);
+}
+
+.action-btn-edit {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+.action-btn-edit:hover {
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+}
+
+.action-btn-danger {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+.action-btn-danger:hover {
+  background-color: #dc2626;
+  color: white;
+  border-color: #dc2626;
+  box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.25);
+  transform: translateY(-1px);
+}
+
