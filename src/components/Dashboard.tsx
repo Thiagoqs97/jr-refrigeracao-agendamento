@@ -194,7 +194,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                       </div>
                     </div>
                     {/* Botões de Ação */}
-                    <div className="flex items-center gap-2 justify-end mt-3 pt-2 border-t border-slate-50">
+                    <div className="flex items-center gap-2 justify-end mt-3 pt-2 border-t border-slate-50 flex-wrap">
                       {!isCompleted && (
                         <button
                           onClick={() => handleFinalize(app.id)}

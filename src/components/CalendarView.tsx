@@ -190,19 +190,19 @@ export default function CalendarView() {
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-3 md:w-64 flex-shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
-                      <div className="flex items-center justify-between md:justify-start gap-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 text-xs sm:text-sm font-black border-2 border-white shadow-sm ring-1 ring-slate-200/50 shrink-0">
+                    <div className="flex flex-col gap-3 md:w-auto md:min-w-[160px] flex-shrink-0 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 text-xs sm:text-sm font-black border-2 border-white shadow-sm ring-1 ring-slate-200/50 shrink-0">
                             {tech?.name[0]}
                           </div>
                           <div className="min-w-0">
                             <p className="text-[8px] sm:text-[10px] text-slate-400 uppercase font-black tracking-widest leading-none mb-0.5">Técnico</p>
-                            <p className="text-xs sm:text-sm font-bold text-slate-800 truncate">{tech?.name}</p>
+                            <p className="text-xs sm:text-sm font-bold text-slate-800 truncate max-w-[100px]">{tech?.name}</p>
                           </div>
                         </div>
-                        <div className="text-right ml-auto">
-                          <div className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${
+                        <div className="shrink-0">
+                          <div className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wider whitespace-nowrap ${
                             app.status === 'confirmed' ? 'bg-emerald-100/80 text-emerald-700 border border-emerald-200/50' :
                             app.status === 'pending' ? 'bg-amber-100/80 text-amber-700 border border-amber-200/50' :
                             app.status === 'completed' ? 'bg-blue-100/80 text-blue-700 border border-blue-200/50' :
@@ -214,35 +214,35 @@ export default function CalendarView() {
                       </div>
 
                       {/* Botões de Ação */}
-                      <div className="flex items-center gap-2 justify-end">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {!isCompleted && (
                           <button
                             onClick={() => handleFinalize(app.id)}
                             disabled={actionLoading === app.id}
-                            className="action-btn-success flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 disabled:opacity-50"
+                            className="action-btn-success flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
                             title="Finalizar agendamento"
                           >
-                            {actionLoading === app.id ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
-                            <span className="hidden sm:inline">Finalizar</span>
+                            {actionLoading === app.id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                            <span>Finalizar</span>
                           </button>
                         )}
                         <button
                           onClick={() => setEditingAppointment(app)}
                           disabled={actionLoading === app.id}
-                          className="action-btn-edit flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 disabled:opacity-50"
+                          className="action-btn-edit flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
                           title="Editar agendamento"
                         >
-                          <Pencil size={13} />
-                          <span className="hidden sm:inline">Editar</span>
+                          <Pencil size={12} />
+                          <span>Editar</span>
                         </button>
                         <button
                           onClick={() => setDeletingId(app.id)}
                           disabled={actionLoading === app.id}
-                          className="action-btn-danger flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 disabled:opacity-50"
+                          className="action-btn-danger flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
                           title="Excluir agendamento"
                         >
-                          <Trash2 size={13} />
-                          <span className="hidden sm:inline">Excluir</span>
+                          <Trash2 size={12} />
+                          <span>Excluir</span>
                         </button>
                       </div>
                     </div>

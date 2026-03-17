@@ -58,9 +58,9 @@ export default function App() {
         </div>
       </header>
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-4 lg:py-8 flex flex-col lg:flex-row gap-6 lg:gap-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-4 lg:py-6 flex flex-col lg:flex-row gap-6 lg:gap-8 min-h-0">
         {/* Sidebar Navigation */}
-        <aside className="lg:w-64 flex-shrink-0">
+        <aside className="lg:w-60 flex-shrink-0">
           <nav className="flex lg:flex-col gap-2 lg:gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 hide-scrollbar">
             {tabs.map((tab) => (
               <button
@@ -101,7 +101,7 @@ export default function App() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 min-w-0 pb-10 lg:pb-0 lg:h-[calc(100vh-12rem)] lg:overflow-y-auto lg:pr-2 custom-scrollbar">
+        <main className="flex-1 min-w-0 pb-4 lg:pb-0 lg:flex-1 lg:overflow-y-auto lg:pr-2 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={`${activeTab}-${refreshKey}`}
