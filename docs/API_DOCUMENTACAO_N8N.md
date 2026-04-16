@@ -248,11 +248,10 @@ Não existe um endpoint nativo de "horários disponíveis". O agente de IA deve 
    - Seg-Sex: `08:00, 09:00, 10:00, 11:00, 12:00, 13:00, 14:00, 15:00, 16:00, 17:00`
    - Sábado: `08:00, 09:00, 10:00, 11:00`
 
-3. **Para determinar horários livres:**
-   - Busque os agendamentos do técnico naquela data (chamada #3 acima)
-   - Extraia os horários ocupados do campo `scheduled_at`
-   - Remova os horários ocupados da lista de slots possíveis
-   - O resultado são os horários disponíveis
+3. **Regra de Bloqueio por Turno (NOVO):**
+   - **Manhã:** Se houver **qualquer** agendamento entre `08:00` e `11:59`, **TODO** o turno da manhã fica bloqueado (ou seja, os horários de 08:00 a 12:00 não ficam mais disponíveis).
+   - **Tarde:** Se houver **qualquer** agendamento entre `13:00` e `17:59`, **TODO** o turno da tarde fica bloqueado (ou seja, os horários de 13:00 a 17:00 não ficam mais disponíveis).
+   - O técnico pode, portanto, fazer no máximo **um serviço de manhã e um serviço de tarde**.
 
 ### Exemplo de Lógica no n8n (Code Node / JavaScript)
 
@@ -270,21 +269,35 @@ if (diaSemana === 0) {
   return [{ json: { disponivel: false, mensagem: "Fechado aos domingos" } }];
 }
 
-// Gerar todos os slots disponíveis
-const todosSlots = diaSemana === 6
-  ? ['08:00', '09:00', '10:00', '11:00']
-  : ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
-
 // Extrair horários ocupados (já vem no horário correto da view!)
 const horariosOcupados = agendamentos
   .filter(item => item.json.status !== 'cancelled')
   .map(item => {
-    // scheduled_at já vem como "2026-03-15T10:00:00" (horário local)
+    // scheduled_at já vem como "2026-03-15T10:00:00"
     return item.json.scheduled_at.split('T')[1].substring(0, 5);
   });
 
-// Calcular horários livres
-const horariosLivres = todosSlots.filter(slot => !horariosOcupados.includes(slot));
+// Verificar ocupação de turnos
+const temAgendamentoManha = horariosOcupados.some(hora => hora < '13:00');
+const temAgendamentoTarde = horariosOcupados.some(hora => hora >= '13:00');
+
+// Gerar todos os slots disponíveis baseados na ocupação do turno
+let horariosLivres = [];
+
+// Se for Sábado, só tem turno da manhã
+if (diaSemana === 6) {
+  if (!temAgendamentoManha) {
+    horariosLivres = ['08:00', '09:00', '10:00', '11:00'];
+  }
+} else {
+  // Segunda a Sexta: Turnos Manhã e Tarde
+  if (!temAgendamentoManha) {
+    horariosLivres.push('08:00', '09:00', '10:00', '11:00', '12:00');
+  }
+  if (!temAgendamentoTarde) {
+    horariosLivres.push('13:00', '14:00', '15:00', '16:00', '17:00');
+  }
+}
 
 return [{
   json: {
@@ -292,7 +305,9 @@ return [{
     tecnico: 'leomar',
     horarios_disponiveis: horariosLivres,
     horarios_ocupados: horariosOcupados,
-    total_livres: horariosLivres.length
+    total_livres: horariosLivres.length,
+    turno_manha_ocupado: temAgendamentoManha,
+    turno_tarde_ocupado: temAgendamentoTarde
   }
 }];
 ```
