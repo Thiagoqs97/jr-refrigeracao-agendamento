@@ -72,7 +72,7 @@ Execute o SQL do arquivo `supabase_views_local.sql` no **SQL Editor** do painel 
 | ID | Nome | WhatsApp | Especialidade | Horário de Trabalho |
 |----|------|----------|---------------|---------------------|
 | `leomar` | Leomar | 86 99504-2011 | Todas | Seg-Sex 8h-18h, Sáb 8h-12h |
-| `haylan` | Haylan | 86 99956-3792 | Todas | Seg-Sex 8h-18h, Sáb 8h-12h |
+| `haylan` | Haylan | 86 99956-3792 | Todas | Indisponível (Agenda bloqueada) |
 | `rozenilson` | Rozenilson | 86 99551-3702 | Todas | Seg-Sex 8h-18h, Sáb 8h-12h |
 
 ## 🔧 Serviços Disponíveis

@@ -15,7 +15,7 @@ export const TECHNICIANS: Technician[] = [
     whatsapp: '86 99956-3792',
     specialty: 'Todas',
     regions: ['Todas'],
-    work_days: ['Seg-Sex 8h-18h', 'Sáb 8h-12h'],
+    work_days: ['Indisponível (Sem agenda aberta)'],
   },
   {
     id: 'rozenilson',
