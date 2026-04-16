@@ -90,6 +90,36 @@ export default function AppointmentForm({ onClose, onSuccess, editingAppointment
         throw new Error('Data e hora inválidas');
       }
 
+      // Validação de bloqueio de turnos (Max. 1 serviço de manhã, 1 de tarde)
+      const startOfDay = new Date(scheduledDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(scheduledDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const { data: existingAppts, error: fetchError } = await supabase
+        .from('appointments')
+        .select('id, scheduled_at')
+        .eq('technician_id', formData.technician_id)
+        .gte('scheduled_at', startOfDay.toISOString())
+        .lte('scheduled_at', endOfDay.toISOString())
+        .neq('status', 'cancelled');
+
+      if (fetchError) throw fetchError;
+
+      const relevantAppts = existingAppts ? existingAppts.filter(appt => appt.id !== editingAppointment?.id) : [];
+      const isMorning = scheduledDate.getHours() < 13;
+
+      const hasMorning = relevantAppts.some(appt => new Date(appt.scheduled_at).getHours() < 13);
+      const hasAfternoon = relevantAppts.some(appt => new Date(appt.scheduled_at).getHours() >= 13);
+
+      if (isMorning && hasMorning) {
+        throw new Error('Bloqueio de Turno: O técnico já possui um agendamento neste turno da manhã. Escolha o turno da tarde ou outro dia/técnico.');
+      }
+      if (!isMorning && hasAfternoon) {
+        throw new Error('Bloqueio de Turno: O técnico já possui um agendamento neste turno da tarde. Escolha o turno da manhã ou outro dia/técnico.');
+      }
+
       const appointmentData = {
         client_name: formData.client_name,
         client_whatsapp: formData.client_whatsapp,
